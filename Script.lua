@@ -14,7 +14,7 @@ gui.Name = "PetaPeta | StarzXPro"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 330)
+frame.Size = UDim2.new(0, 220, 0, 390)
 frame.Position = UDim2.new(0.3, 0, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Active = true
@@ -51,8 +51,9 @@ local speedBtn = createButton("Fast Speed", 80, Color3.fromRGB(100, 100, 255))
 local boxBtn = createButton("Esp Box", 120, Color3.fromRGB(100, 255, 100))
 local safeBtn = createButton("Esp Safe", 160, Color3.fromRGB(255, 255, 0))
 local extrasBtn = createButton("Coin + Hint + Hide + Key", 200, Color3.fromRGB(255, 128, 0))
-local playerEspBtn = createButton("Esp Player", 240, Color3.fromRGB(0, 170, 255))
-local infoBtn = createButton("Info", 280, Color3.fromRGB(180, 180, 180))
+local playerEspBtn = createButton("Esp Player + Distance", 240, Color3.fromRGB(200, 200, 255))
+local evilRoomBtn = createButton("Esp Evil Room", 280, Color3.fromRGB(255, 0, 0))
+local infoBtn = createButton("Info", 320, Color3.fromRGB(180, 180, 180))
 
 espBtn.MouseButton1Click:Connect(function()
 	for _, model in ipairs(workspace:GetDescendants()) do
@@ -131,7 +132,7 @@ extrasBtn.MouseButton1Click:Connect(function()
 	end
 
 	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("BasePart") and (obj.Name == "Meshes/coin" or obj.Name == "Meshes/closet_DoorR" or obj.Name == "HintPaper" or obj.Name == "Key") then
+		if obj:IsA("BasePart") and (obj.Name == "Meshes/coin" or obj.Name == "Meshes/closet_DoorR" or obj.Name == "HintPaper" or obj.Name == "Meshes/key") then
 			local dist = root and (obj.Position - root.Position).Magnitude or math.huge
 			if dist <= maxDistance then
 				if obj.Name == "Meshes/coin" then
@@ -140,8 +141,8 @@ extrasBtn.MouseButton1Click:Connect(function()
 					createESP(obj, "HIDE", Color3.fromRGB(255, 0, 0))
 				elseif obj.Name == "HintPaper" then
 					createESP(obj, "HINT", Color3.fromRGB(0, 255, 0))
-				elseif obj.Name == "Key" then
-					createESP(obj, "KEY", Color3.fromRGB(0, 255, 255))
+				elseif obj.Name == "Meshes/key" then
+					createESP(obj, "KEY", Color3.fromRGB(0, 200, 255))
 				end
 			end
 		end
@@ -149,57 +150,45 @@ extrasBtn.MouseButton1Click:Connect(function()
 end)
 
 playerEspBtn.MouseButton1Click:Connect(function()
-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	if not root then return end
-	local maxDistance = 300
-
-	local function createPlayerESP(target)
-		if target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-			if not target.Character:FindFirstChild("PlayerESP") then
+	for _, plr in ipairs(game.Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local part = plr.Character.HumanoidRootPart
+			if not part:FindFirstChild("ESP") then
 				local billboard = Instance.new("BillboardGui")
-				billboard.Name = "PlayerESP"
-				billboard.Adornee = target.Character.HumanoidRootPart
-				billboard.Size = UDim2.new(0, 150, 0, 20)
-				billboard.StudsOffset = Vector3.new(0, 3, 0)
+				billboard.Name = "ESP"
+				billboard.Adornee = part
+				billboard.Size = UDim2.new(0, 100, 0, 20)
+				billboard.StudsOffset = Vector3.new(0, 2, 0)
 				billboard.AlwaysOnTop = true
 
 				local label = Instance.new("TextLabel", billboard)
 				label.Size = UDim2.new(1, 0, 1, 0)
 				label.BackgroundTransparency = 1
-				label.TextColor3 = Color3.fromRGB(0, 170, 255)
-				label.TextStrokeTransparency = 0.5
+				local distance = math.floor((player.Character.HumanoidRootPart.Position - part.Position).Magnitude)
+				label.Text = plr.Name .. " [" .. distance .. "m]"
+				label.TextColor3 = Color3.fromRGB(200, 200, 255)
 				label.TextScaled = true
 				label.Font = Enum.Font.SourceSansBold
-				label.Text = ""
 
-				billboard.Parent = target.Character
+				billboard.Parent = part
 			end
 		end
 	end
+end)
 
-	for _, plr in ipairs(game.Players:GetPlayers()) do
-		if plr ~= player then
-			createPlayerESP(plr)
-		end
-	end
-
-	game:GetService("RunService").RenderStepped:Connect(function()
-		for _, plr in ipairs(game.Players:GetPlayers()) do
-			if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-				local gui = plr.Character:FindFirstChild("PlayerESP")
-				local rootPart = plr.Character.HumanoidRootPart
-				if gui and gui:FindFirstChildOfClass("TextLabel") then
-					local dist = (rootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-					if dist <= maxDistance then
-						gui.Enabled = true
-						gui.TextLabel.Text = plr.Name .. " [" .. math.floor(dist) .. "m]"
-					else
-						gui.Enabled = false
-					end
-				end
+evilRoomBtn.MouseButton1Click:Connect(function()
+	for _, room in ipairs(workspace:GetDescendants()) do
+		if room:IsA("Model") and room.Name:lower():find("evilroom") then
+			if not room:FindFirstChild("EvilRoomESP") then
+				local highlight = Instance.new("Highlight")
+				highlight.Name = "EvilRoomESP"
+				highlight.FillColor = Color3.fromRGB(255, 0, 0)
+				highlight.FillTransparency = 0.2
+				highlight.OutlineTransparency = 1
+				highlight.Parent = room
 			end
 		end
-	end)
+	end
 end)
 
 infoBtn.MouseButton1Click:Connect(function()
