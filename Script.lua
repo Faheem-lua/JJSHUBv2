@@ -8,7 +8,7 @@ end
 
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "ESPAndSpeedGUI"
+gui.Name = "PetaPeta | Starz Hub"
 gui.ResetOnSpawn = false
 
 local uis = game:GetService("UserInputService")
